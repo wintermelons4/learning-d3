@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>D3 Streaming</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var width = 1000;
+      var margin = 30;
+      var svg = d3.select("body")
+        .append("svg")
+          .attr("width", width)
+          .attr("height", 500)
+          .style("border", "1px solid");
+      
+      var data1 = [1, 2, 4, 8];
+      var data2 = [13, 14, 17, 18];
+      var data3 = [23, 30, 44];
+      var data4 = [49, 63];
+      
+      var g = svg.append("g")
+          .attr("transform", "translate(" + margin + "," + margin + ")");
+      
+      g.append("line")
+          .attr("x1", 0)
+          .attr("y1", 0)
+          .attr("x2", width - 2*margin)
+          .attr("y2", 0)
+          .style("stroke", "lightgray")
+          .style("stroke-width", 1);
+      
+      function update(group, newData) {
+        let oldData = group.selectAll("circle").data();
+        
+        group.selectAll("circle")
+          .data(oldData.concat(newData))
+          .enter()
+          .append("circle")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", 8)
+            .style("stroke", "white")
+            .style("stroke-width", 2)
+            .style("fill", "lightgreen")
+          .transition()
+            .delay((d, i) => 50*i)
+            .attr("cx", (d) => width - 2*margin - 10*d);
+      }
+      
+      setTimeout(() => update(g, data1), 1000);
+      setTimeout(() => update(g, data2), 1500);
+      setTimeout(() => update(g, data3), 1700);
+      setTImeout(() => update(g, data4), 1800);
+    </script>
+  </body>
+</html>

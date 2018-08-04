@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>D3 Essentials</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+  </head>
+  
+  <body>
+    <p>Hello World!</p>
+    <svg>
+      <circle></circle>
+      <circle></circle>
+      <circle></circle>
+      <circle></circle>
+      <circle></circle>
+      <circle></circle>
+      <circle></circle>
+      <circle></circle>
+      <circle></circle>
+    </svg>
+    
+    <div>
+      <label>
+        <input type="checkbox" />
+        My Box
+      </label>
+    </div>
+    
+    <style>
+      .emphasized {
+        font-style: oblique;
+      }
+      .grid-line {
+        stroke: lightgrey;
+        stroke-width: 1px;
+      }
+    </style>
+    
+    <script>
+    // Output DOM objects
+    console.log("Nodes:", d3.selectAll("p").nodes());
+    
+    // Modifying style
+    d3.select("p").style("color", "red");
+    d3.select("p").style("font-size", () => "32pt");
+    
+    // Modifying attributes
+    var mySvg = d3.select("svg")
+        .attr("width", 500)
+        .attr("height", 100)
+        .style("background-color", "green");
+    
+    d3.selectAll("circle")
+        .attr("fill", "red")
+        .attr("stroke", "blue")
+        .attr("cx", (d, i) => 50+30*i)
+        .attr("cy", 50)
+        .attr("r", (d, i) => 30-2*i);
+    
+    // By convention, selection methods that return the current selection
+    // (e.g style(), attr())  use four spaces of indent, while methods
+    // that return a new selection(e.g select(), selectAll(), append())
+    // use only two.  This helps reveal changes of context by making them
+    // stick out of the chain.
+    
+    // Fetching attributes
+    console.log("Attr:", mySvg.attr("width"));
+    
+    // Modifying properties
+    d3.select("input[type=checkbox]")
+        .property("checked", true);
+    
+    // Modifying classes
+    d3.select("p")
+        .classed("emphasized", true);
+    
+    // Modifying text
+    d3.select("p")
+        .text("Hello David!");
+    
+    // Appending element
+    d3.select("svg")
+      .append("circle")
+        .attr("fill", "red")
+        .attr("stroke", "white")
+        .attr("cx", 350)
+        .attr("cy", 50)
+        .attr("r", 30);
+    
+    // Filtering selection
+    d3.selectAll("circle")
+      .filter(":nth-child(even)")
+        .attr("fill", "gray");
+    
+    // Array functions
+    var arr = [3, 14, 15, 7, 84, 32];
+    
+    console.log("Arr:", arr);
+    console.log("Min:", d3.min(arr));
+    console.log("Max:", d3.max(arr));
+    console.log("Extent:", d3.extent(arr));
+    console.log("Sum:", d3.sum(arr));
+    console.log("Mean:", d3.mean(arr));
+    console.log("Merged [1, 2, 3]:", d3.merge([arr, [1, 2, 3]]));
+    
+    // Collection functions
+    var me = {
+      firstName: "David",
+      lastName: "Song",
+      age: 22,
+    };
+    
+    console.log("Me:", me);
+    console.log("Keys:", d3.keys(me));
+    console.log("Values:", d3.values(me));
+    console.log("Entries:", d3.entries(me));
+    
+    // Nested collections
+    var tweets = [
+      {user: 'John', topic: 'technology', numberOfTweets: 10},
+      {user: 'John', topic: 'politics', numberOfTweets: 30},
+      {user: 'Jack', topic: 'technology', numberOfTweets: 20},
+      {user: 'John', topic: 'entertainment', numberOfTweets: 5},
+      {user: 'Jack', topic: 'politics', numberOfTweets: 10}
+    ];
+    
+    console.log("Group by user:", d3.nest().key(d => d.user).entries(tweets));
+    console.log("Group by topic:", d3.nest().key(d => d.topic).entries(tweets));
+    
+    // Data binding
+    var circles = d3.select("svg")
+      .selectAll("circle")
+      .data(tweets);
+    
+    // Update pattern
+    circles
+        .attr("stroke", "white");
+    circles.exit()
+        .attr("stroke", "black");
+    circles.enter()
+      .append("circle")
+      .merge(circles);
+    
+    // Scales
+    var scaleDown = d3.scaleLinear()
+        .domain([0, 1500])
+        .range([0, 500])
+        .clamp(true);
+    
+    console.log("Scaled 10:", scaleDown(10));
+    console.log("Scaled 100:", scaleDown(100));
+    console.log("Scaled 10000 (clamped):", scaleDown(10000));
+    
+    // Bar chart
+    var data = [10, 15, 25, 120, 500, 980, 1200];
+    
+    d3.select("svg")
+        .attr("height", 500)
+      .selectAll("rect")
+      .data(data)
+      .enter()
+      .append("rect")
+        .attr("width", 30)
+        .attr("height", (d) => scaleDown(d))
+        .attr("x", (d, i) => 30*i)
+        .attr("y", (d) => 500 - scaleDown(d))
+        .style("fill", "cyan")
+        .style("stroke", "black")
+        .style("stroke-width", "1px")
+        .style("opacity", .25);
+      
+    // Axes (with grid)
+    // var width = 233;
+    // var height = 110;
+    var width = 500;
+    var height = 400;
+    var margin = 35;
+    var xLength = width - 2*margin;
+    var yLength = height - 2*margin;
+    
+    var axesContainer = d3.select("body")
+      .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .style("border", "1px solid");
+    
+    var axesScaleX = d3.scaleLinear()
+        .domain([0, 25])
+        .range([0, xLength]);
+        
+    var axesScaleY = d3.scaleLinear()
+        .domain([25, 0])
+        .range([0, yLength]);
+    
+    var axesX = d3.axisBottom(axesScaleX)
+        .ticks(5)
+        .tickFormat((d) => d + "%");
+        
+    var axesY = d3.axisLeft(axesScaleY)
+        .ticks(4)
+        .tickFormat((d) => d + "%");
+    
+    // X-axis
+    axesContainer.append("g")
+        .classed("x-axis", true)
+        .attr("transform", "translate(" + margin + "," + (height - margin) + ")")
+        .call(axesX);
+    
+    // X-axis grids
+    axesContainer.selectAll("g.x-axis g.tick")
+      .append("line")
+        .classed("grid-line", true)
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", 0)
+        .attr("y2", -yLength);
+    
+    // Y-axis
+    axesContainer.append("g")
+        .classed("y-axis", true)
+        .attr("transform", "translate(" + margin + "," + margin + ")")
+        .call(axesY);
+    
+    // Y-axis grids
+    axesContainer.selectAll("g.y-axis g.tick")
+      .append("line")
+        .classed("grid-line", true)
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", xLength)
+        .attr("y2", 0);
+    
+    // Transitions
+    d3.select("body")
+      .append("div")
+        .style("position", "absolute")
+        .style("width", "100px")
+        .style("height", "100px")
+        .style("border", "1px solid red")
+        .style("background-color", "red")
+      .transition()
+        .delay(2000)
+        .duration(2500)
+        .style("left", "400px")
+        .style("background-color", "blue")
+        .on("start", () => console.log("started blue"))
+        .on("end", () => console.log("ended blue"))
+      .transition()
+        .duration(1000)
+        .style("top", "0px")
+        .style("background-color", "green")
+        .on("start", () => console.log("started green"))
+        .on("end", () => console.log("ended green"));
+    
+    // Lines and Area
+    var lineData1 = [
+    	{x: 0, y: 4},
+    	{x: 1, y: 9},
+    	{x: 2, y: 6},
+    	{x: 4, y: 5},
+    	{x: 6, y: 7},
+    	{x: 7, y: 3},
+    	{x: 9, y: 2},
+    	{x: 11, y: 2},
+    	{x: 12, y: 6},
+    	{x: 14, y: 11},
+    	{x: 15, y: 12},
+    	{x: 18, y: 9},
+    	{x: 19, y: 11},
+    	{x: 23, y: 14},
+    	{x: 24, y: 15},
+    	{x: 25, y: 20},
+    ];
+    
+    var lineData2 = [
+    	{x: 0, y: 0},
+    	{x: 1, y: 3},
+    	{x: 2, y: 4},
+    	{x: 3, y: 7},
+    	{x: 6, y: 6},
+    	{x: 8, y: 4},
+    	{x: 9, y: 2},
+    	{x: 10, y: 8},
+    	{x: 11, y: 8},
+    	{x: 12, y: 8},
+    	{x: 14, y: 11},
+    	{x: 16, y: 19},
+    	{x: 19, y: 12},
+    	{x: 22, y: 13},
+    	{x: 23, y: 12},
+    	{x: 25, y: 11},
+    ];
+    
+    var line = d3.line()
+        .x((d) => axesScaleX(d.x))
+        .y((d) => axesScaleY(d.y))
+        .curve(d3.curveBasis);
+        
+    var area = d3.area()
+        .x((d) => axesScaleX(d.x))
+        .y0(axesScaleY(0))
+        .y1((d) => axesScaleY(d.y))
+        .curve(d3.curveBasis);
+    
+    axesContainer.append("path")
+        .attr("d", area(lineData1))
+        .attr("transform", "translate(" + margin + "," + margin + ")")
+        .attr("fill", "pink")
+        .attr("stroke", "red");
+    
+    axesContainer.append("path")
+        .attr("d", line(lineData2))
+        .attr("transform", "translate(" + margin + "," + margin + ")")
+        .attr("fill", "none")
+        .attr("stroke", "blue");
+    
+    // Arcs
+    var arcContainer = d3.select("body")
+      .append("svg")
+        .attr("width", 500)
+        .attr("height", 600)
+        .style("border", "1px solid");
+    
+    var arc1 = d3.arc()
+        .innerRadius(0)
+        .outerRadius(100)
+        .startAngle(0)
+        .endAngle(3*Math.PI/2);
+    
+    var arc2 = d3.arc()
+        .innerRadius(50)
+        .outerRadius(100)
+        .startAngle(0)
+        .endAngle(2*Math.PI);
+    
+    arcContainer.append("g")
+        .attr("transform", "translate(" + 100 + "," + 100 + ")")
+      .append("path")
+        .attr("d", arc1())
+        .attr("fill", "red");
+    
+    arcContainer.append("g")
+        .attr("transform", "translate(" + 350 + "," + 300 + ")")
+      .append("path")
+        .attr("d", arc2())
+        .attr("fill", "blue");
+    
+    // Pie
+    var pieData = [1, 2, 1, 5, 3, 1, 7, 8];
+    var colors = d3.scaleOrdinal(d3.schemeCategory10);
+    
+    var pieArc = d3.arc()
+        .innerRadius(70)
+        .outerRadius(100);
+    
+    var pieGroup = arcContainer.append("g")
+        .attr("transform", "translate(" + 150 + "," + 450 + ")");
+    
+    var pieArcs = d3.pie()(pieData);
+    
+    pieArcs.forEach(function (d, i) {
+      pieGroup.append("path")
+          .attr("fill", colors(i))
+        .transition()
+          .duration(1000)
+          .attrTween("d", function () {
+            var start = {
+              startAngle: 0,
+              endAngle: 0,
+            };
+            var interpolate = d3.interpolate(start, d);
+            return (t) => pieArc(interpolate(t));
+          });
+    });
+    
+    // Stacked
+    var stackData = [
+      {month: "2013", apples: 100, bananas: 200, oranges: 130},
+      {month: "2014", apples: 300, bananas: 150, oranges: 120},
+      {month: "2015", apples:  200, bananas:  280, oranges: 200},
+      {month: "2016", apples:  400, bananas:  100, oranges: 300},
+      {month: "2017", apples:  230, bananas:  400, oranges: 100},
+    ];
+    
+    var stack = d3.stack()
+        .keys(["apples", "bananas", "oranges"]);
+    
+    var series = stack(stackData);
+    var seriesMin = d3.min(series.map(function (e) {
+      return d3.min(e.map((d) => d3.min(d)));
+    }));
+    var seriesMax = d3.max(series.map(function (e) {
+      return d3.max(e.map((d) => d3.max(d)));
+    }));
+    
+    var stackScaleX = d3.scaleBand()
+        .domain(stackData.map(d => d.month))
+        .rangeRound([0, xLength]);
+    
+    var stackScaleY = d3.scaleLinear()
+        .domain([seriesMin, seriesMax])
+        .range([yLength, 0])
+        .clamp(true);
+        
+    var stackedContainer = d3.select("body")
+      .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .style("border", "1px solid");
+    
+    stackedContainer.append("g")
+        .classed("x-axis", true)
+        .attr("transform", () => "translate(" + margin + "," + (height - margin) + ")")
+        .call(d3.axisBottom(stackScaleX));
+    
+    stackedContainer.append("g")
+        .classed("y-axis", true)
+        .attr("transform", () => "translate(" + margin + "," + margin + ")")
+        .call(d3.axisLeft(stackScaleY));
+    
+    stackedContainer.selectAll("g.y-axis g.tick")
+      .append("line")
+        .classed("grid-line", true)
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", xLength)
+        .attr("y2", 0);
+    
+    stackedContainer.append("g")
+        .attr("transform", () => "translate(" + margin + "," + margin + ")")
+      .selectAll("g")
+      .data(series)
+      .enter()
+      .append("g")
+        .attr("fill", d => colors(d.key))
+      .selectAll("rect")
+      .data(d => d)
+      .enter()
+      .append("rect")
+        .attr("x", (d, i) => xLength/stackData.length*i + xLength/stackData.length/4)
+        .attr("y", d => stackScaleY(d["1"]))
+        .attr("width", xLength/stackData.length/2)
+        .attr("height", d => yLength - (stackScaleY(d["1"] - d["0"])));
+    
+    // Tree with CSV (VIS SKIPPED)
+    var csvData = "name,parent\n" +
+      "John,\n" +
+      "Jack,John\n" +
+      "Drake,John\n" +
+      "Keith,Drake\n" +
+      "Harry,Drake\n" +
+      "Joshua,John\n" +
+      "Smith,John\n" +
+      "Peter,Smith\n" +
+      "Larry,John\n";
+    
+    var parsed = d3.csvParse(csvData);
+    
+    var stratify = d3.stratify()
+        .id(d => d.name)
+        .parentId(d => d.parent);
+    
+    var root = stratify(parsed);
+    
+    // Interactions
+    d3.selectAll("svg")
+        .on("mouseover", (d, i) => console.log("Mouseover:", d, i, this));
+    
+    var myText = mySvg.append("text")
+        .attr("transform", "translate(" + 100 + "," + 100 + ")");
+    
+    mySvg.on("mousemove", () => myText.text(d3.event.clientX + " " + d3.event.clientY));
+    
+    // Zooming
+    var zoom = d3.zoom()
+        .scaleExtent([1, 10])
+        .on("zoom", () => zoomContainer.attr("transform",
+          "translate(" +
+          d3.event.transform.x + "," +
+          d3.event.transform.y + ") " +
+          "scale(" + d3.event.transform.k + ")"));
+          
+    var zoomContainer = d3.select("body")
+      .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .style("border", "1px solid")
+        .call(zoom)
+      .append("g");
+    
+    var r = 5;
+    
+    zoomContainer.selectAll("circle")
+      .data([
+        [width/2 - r, height/2 - r],
+        [width/2 - r, height/2 + r],
+        [width/2 + r, height/2 - r],
+        [width/2 + r, height/2 + r],
+      ])
+      .enter()
+      .append("circle")
+        .attr("r", 5)
+        .attr("transform", (d) => "translate(" + d + ")");
+    
+    // Dragging
+    var drag = d3.drag()
+        .on("drag", function () {
+          d3.select(this)
+              .attr("transform", "translate(" + d3.event.x + "," + d3.event.y + ")");
+        });
+    
+    mySvg.selectAll("circle").call(drag);
+    </script>
+  </body>
+</html>
